@@ -1,3 +1,4 @@
+import { ArrowNarrowRightIcon } from '@heroicons/react/solid';
 import { useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useRouter } from 'next/router';
@@ -10,62 +11,56 @@ import { auth } from '#firebase';
 import { useCart } from '#Ctx';
 import Spin from '#UI/Spin';
 import { createOrder } from '#LIB/orders';
-import { ArrowNarrowRightIcon } from '@heroicons/react/solid';
+
 const index = () => {
   const [user, loading] = useAuthState(auth);
-  function _sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 
   const { carts, cartDispatch } = useCart();
-  // const onSubmit = async (values, actions) => {
-  //   await _sleep(2500);
-  //   console.log('object', values);
-  // };
+
   const router = useRouter();
+
   const onSubmit = async (values, actions) => {
     try {
       const res = await createOrder(values, carts, user.uid);
-      console.log('Res', res);
-      cartDispatch({ type: 'REMOVE' });
+
       actions.setSubmitting(false);
+      // cartDispatch({ type: 'REMOVE' });
       router.push(`pay/?id=${res}`);
     } catch (err) {
       actions.setSubmitting(false);
     }
   };
   useEffect(() => {
-    // !loading && !user && router.push('/login?redirectTo=checkout');
-    // if cart is empty.
+    !loading && !user && router.push('/login?redirectTo=checkout');
+    carts.length === 0 && router.push('/cart');
   }, [user, loading]);
-  console.log('Chckout/index');
   return (
-    <Formik
-      initialValues={initialValues}
-      onSubmit={onSubmit}
-      validate={validate}
-    >
-      {(props) => {
-        console.log('Props');
-        return (
-          <Form>
-            <div className="mx-auto max-w-md border-2  bg-blue-50 shadow-lg rounded-lg md:max-w-xl">
-              <div className="mx-auto md:flex">
-                <div className="w-full px-5 py-5">
-                  <div className="flex flex-row py-5">
-                    <h2 className="text-3xl font-semibold">Nexom</h2>
+    user && (
+      <Formik
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        validate={validate}
+      >
+        {(props) => {
+          return (
+            <Form>
+              <div className="mx-auto max-w-md border-2  bg-blue-50 shadow-lg rounded-lg md:max-w-xl">
+                <div className="mx-auto md:flex">
+                  <div className="w-full px-5 py-5">
+                    <div className="flex flex-row py-5">
+                      <h2 className="text-3xl font-semibold">Nexom</h2>
 
-                    <h2 className="text-3xl text-blue-400 font-semibold">
-                      Checkout
-                    </h2>
-                  </div>
-                  <AddressFrom />
-                  <Payment />
-                  <div className="flex justify-between items-center pt-2">
-                    <Link href="/cart">
-                      <a
-                        type="button"
-                        className="cursor-pointer inline-flex items-center  my-2 
+                      <h2 className="text-3xl text-blue-400 font-semibold">
+                        Checkout
+                      </h2>
+                    </div>
+                    <AddressFrom />
+                    <Payment />
+                    <div className="flex justify-between items-center pt-2">
+                      <Link href="/cart">
+                        <a
+                          type="button"
+                          className="cursor-pointer inline-flex items-center  my-2 
                       rounded-full px-6 py-2 text-white
                       bg-red-500
                         hover:bg-red-400
@@ -74,15 +69,15 @@ const index = () => {
                         focus:shadow-xl
                         transition duration-600
                         focus:outline-none"
-                      >
-                        Return to cart
-                      </a>
-                    </Link>
-                    {/* <Link href="/placeorder"> */}
-                    <button
-                      type="submit"
-                      disabled={props.isSubmitting}
-                      className="cursor-pointer inline-flex items-center justify-center  my-2 
+                        >
+                          Return to cart
+                        </a>
+                      </Link>
+                      {/* <Link href="/placeorder"> */}
+                      <button
+                        type="submit"
+                        disabled={props.isSubmitting}
+                        className="cursor-pointer inline-flex items-center justify-center  my-2 
                       rounded-full px-6 py-2 text-white
                       bg-blue-500
                         hover:bg-blue-400
@@ -94,27 +89,28 @@ const index = () => {
                         focus:outline-none 
                         disabled:opacity-1000
                         disabled:cursor-not-allowed"
-                    >
-                      {props.isSubmitting ? (
-                        <>
-                          <Spin /> <Spin /> <Spin />
-                        </>
-                      ) : (
-                        <>
-                          Continue
-                          <ArrowNarrowRightIcon className="w-4 h-4 mx-2" />
-                        </>
-                      )}
-                    </button>
-                    {/* </Link> */}
+                      >
+                        {props.isSubmitting ? (
+                          <>
+                            <Spin /> <Spin /> <Spin />
+                          </>
+                        ) : (
+                          <>
+                            Continue
+                            <ArrowNarrowRightIcon className="w-4 h-4 mx-2" />
+                          </>
+                        )}
+                      </button>
+                      {/* </Link> */}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Form>
-        );
-      }}
-    </Formik>
+            </Form>
+          );
+        }}
+      </Formik>
+    )
   );
 };
 
@@ -124,7 +120,6 @@ const ErrorComponent = ({ children }) => (
   <div className="span text-red-500 text-sm h-6 ml-2">{children}</div>
 );
 const Payment = () => {
-  console.log('Checkout/payment');
   return (
     <>
       <TopHeading name="Payment Method" />
@@ -166,7 +161,6 @@ const Payment = () => {
   );
 };
 export const TopHeading = ({ name }) => {
-  console.log('Checkout/TopHeading');
   return (
     <div className="my-5 ">
       <h1 className="text-center font-bold text-xl uppercase">{name}</h1>
@@ -174,7 +168,6 @@ export const TopHeading = ({ name }) => {
   );
 };
 const AddressFrom = () => {
-  console.log('Checkout/addressForm');
   return (
     <div id="adressFrom">
       <TopHeading name="Shipping Address" />

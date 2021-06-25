@@ -4,7 +4,6 @@ import Head from 'next/head';
 import Layout from '#components/Layout';
 import CartContextProvider from '#Ctx';
 function MyApp({ Component, pageProps }) {
-  console.log('_App');
   return (
     <>
       <Head>

@@ -1,7 +1,4 @@
-import React from 'react';
-
 const Selection = () => {
-  console.log('home/selection');
   return (
     <>
       <div className="flex my-3">

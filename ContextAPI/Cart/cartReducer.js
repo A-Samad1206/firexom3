@@ -1,6 +1,7 @@
-const setCarts = (state) =>
-  localStorage.setItem('carts', JSON.stringify(state));
-
+const setCarts = (state) => {
+  let temp = [...state];
+  localStorage.setItem('carts', JSON.stringify(temp));
+};
 const getCarts = () => JSON.parse(localStorage.getItem('carts'));
 
 const addToLocal = (state) => {
@@ -35,7 +36,6 @@ const cartReducer = (state, action) => {
     id = action?.payload?.id,
     qty = 1,
     img = action?.payload?.img;
-  console.log('From caart Reducers');
   switch (action.type) {
     case 'ADD_CART':
       const letCat = { id, name, price, slug, qty, img };
@@ -56,12 +56,8 @@ const cartReducer = (state, action) => {
     case 'DEC_CART':
       return addToLocal(incOrDec(false, id));
 
-    case 'INIT':
-      return [...state, ...action.payload];
-    case 'GET':
-      return getCarts();
     default:
-      return state;
+      return addToLocal(state);
   }
 };
 export default cartReducer;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 const index = () => {
   return (
@@ -21,4 +21,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default memo(index);

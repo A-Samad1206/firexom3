@@ -1,74 +1,31 @@
-import { updateOrder } from '#LIB/orders';
-
 import { Field, Form, Formik } from 'formik';
-import Link from 'next/link';
 import { useState } from 'react';
-const initialValues = {
-  nameOnCard: 'John Doe',
-  cardNumber: '4111 1111 1111 1111',
-  cvv: '123',
-  expirationMonth: '02',
-  expirationYear: '2021',
-};
-const validation = (values) => {
-  let errors = {};
-  if (!values.nameOnCard)
-    errors.nameOnCard = 'Mention the name on card and is required';
-  if (!values.cvv) errors.securityCode = 'CVV is required';
-  if (!values.expirationYear) errors.expirationYear = 'Card Number is required';
-  if (!values.cardNumber) errors.cardNumber = 'Card Number is required';
-  if (!values.expirationMonth)
-    errors.expirationMonth = 'Card Number is required';
-  return errors;
-};
-
-export const months = [
-  { value: '00', name: 'Month' },
-  { value: '01', name: 'January' },
-  { value: '02', name: 'February' },
-  { value: '03', name: 'March' },
-  { value: '04', name: 'April' },
-  { value: '05', name: 'May' },
-  { value: '06', name: 'June' },
-  { value: '07', name: 'July' },
-  { value: '08', name: 'August' },
-  { value: '09', name: 'September' },
-  { value: '10', name: 'October' },
-  { value: '11', name: 'November' },
-  { value: '12', name: 'December' },
-];
-export const years = [
-  { value: '0', name: 'Year' },
-  { value: '2020', name: '2020' },
-  { value: '2021', name: '2021' },
-  { value: '2022', name: '2022' },
-  { value: '2023', name: '2023' },
-  { value: '2024', name: '2024' },
-  { value: '2025', name: '2025' },
-  { value: '2026', name: '2026' },
-  { value: '2027', name: '2027' },
-  { value: '2028', name: '2028' },
-  { value: '2029', name: '2029' },
-  { value: '2030', name: '2030' },
-];
+import { useRouter } from 'next/router';
+import { updateOrder } from '#LIB/orders';
+import { initialValues, validation, months, years } from './atmFormSchema';
+import SuccessMessage from './SuccessMessage';
+import PaymentDetail from './PaymentDetail';
 const index = ({ orderId, userId }) => {
-  console.log('order.paymentorder.payment', orderId);
+  const router = useRouter();
+  !userId && router.push(`/login?redirectTo=pay?${orderId}`);
   const [paid, setPaid] = useState(false);
   const onSubmit = async (values, actions) => {
-    console.log('Values', values);
-    const { success, paymentDetails } = await updateOrder(
+    const { paymentDetails, alreadyPaid } = await updateOrder(
       userId,
       orderId,
       values
     );
+    typeof alreadyPaid !== 'undefined' &&
+      alreadyPaid &&
+      router.push(`/order/${orderId}`);
     setPaid(paymentDetails);
     actions.setSubmitting(false);
   };
 
   return paid ? (
     <>
-      <PayDetail paymentDetails={paid} />
-      <OrderSuccess orderId={orderId} />
+      <PaymentDetail paymentDetails={paid} />
+      <SuccessMessage orderId={orderId} />
     </>
   ) : (
     <Formik
@@ -166,41 +123,4 @@ const Select = ({ name, data }) => (
       </option>
     ))}
   </Field>
-);
-const PayDetail = ({ paymentDetails }) => (
-  <div>
-    <div className="text-xl font-semibold py-4 ">Payment Details</div>
-    <div className="flex items-center justify-between ">
-      <div>Card Type</div>
-      <div>Visa</div>
-    </div>
-    <div className="flex items-center justify-between ">
-      <div>Card Name</div>
-      <div>{paymentDetails.nameOnCard}</div>
-    </div>
-    <div className="flex items-center justify-between ">
-      <div>Card Number</div>
-      <div>{paymentDetails.cardNumber}</div>
-    </div>
-    <div className="flex items-center justify-between ">
-      <div>Expire Date</div>
-      <div>
-        {paymentDetails.expirationMonth}/{paymentDetails.expirationYear}
-      </div>
-    </div>
-  </div>
-);
-
-const OrderSuccess = ({ orderId }) => (
-  <div className=" py-16">
-    <div className="text-3xl font-bold my-4">Thank you for your order.</div>
-    <div className="text-xl italic">
-      Your order number is{' '}
-      <Link href={`/order/${orderId}`}>
-        <a className="m-1 text-blue-700 underline"> {orderId}</a>
-      </Link>
-      . We have emailed your order confirmation, and will send you an update
-      when your order has shipped.
-    </div>
-  </div>
 );

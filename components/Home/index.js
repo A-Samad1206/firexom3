@@ -2,7 +2,6 @@ import { ArrowSmRightIcon } from '@heroicons/react/solid';
 import Card from './Card';
 import Link from 'next/link';
 const index = ({ title, data }) => {
-  console.log('home/index');
   return (
     data && (
       <div className="border-t mx-4 sm:mx-0 ">

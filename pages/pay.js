@@ -9,26 +9,35 @@ import { getOrder } from '#LIB/orders';
 import Skeleton from '#UI/Skeleton';
 
 const Pay = () => {
-  console.log('page/Pay');
-
   const [user, loading] = useAuthState(auth);
   const router = useRouter();
   const {
-    query: { id },
+    query: { id: orderId },
   } = router;
   const [order, setOrder] = useState();
-
   useEffect(() => {
     const get = async () => {
-      console.table({ uid: user?.uid, id });
-      !loading && !user && router.push('/login');
-      const { data } = !loading && user && (await getOrder(user.uid, id));
-      console.log('data', data);
-      data?.payment?.paid === true && router.push(`/order/${data.id}`);
-      data !== false ? setOrder(data) : router.push('/profile');
+      !loading && !user && router.push(`/login?redirectTo=pay?id=${orderId}`);
+      !orderId && router.push('/cart');
+      if (!loading && user) {
+        const { data } = await getOrder(user.uid, orderId);
+
+        typeof data !== 'undefined' &&
+          data?.payment?.paid === true &&
+          router.push(`/order/${data.id}`);
+        if (typeof data !== 'undefined' && data !== false) {
+          setOrder(data);
+        } else {
+          console.log('No data of corresponding orderId');
+          // router.push('/profile')
+        }
+      }
+      // typeof data !== 'undefined' && data !== false
+      //   ?
+      //   : router.push('/profile');
     };
     get();
-  }, [user]);
+  }, [user, orderId]);
 
   return (
     <div className="mx-auto w-full md:max-w-[75%]  rounded-lg shadow-md p-8">
@@ -69,12 +78,12 @@ const Pay = () => {
               id="paymentDetails"
               className="text-base  col-span-3  space-y-1"
             >
-              <AtmForm orderId={order.id} userId={user.uid} />
+              <AtmForm orderId={order.id} userId={user?.uid} />
             </div>
           </div>
         </>
       ) : (
-        <div className="grid grid-cols-6 space-y-8">
+        <div className="grid grid-cols-6  ">
           <Pulse />
           <Pulse />
           <Pulse />
@@ -124,7 +133,6 @@ const ItemRow = ({ cart }) => (
   </div>
 );
 const TopHeader = () => {
-  console.log('pay/TopHeader');
   return (
     <div className="flex items-center font-semibold text-sm">
       <span className="w-2/5">Product</span>
@@ -135,8 +143,6 @@ const TopHeader = () => {
   );
 };
 const Total = ({ label, value }) => {
-  console.log('pay/Total');
-
   return (
     <div className="flex items-center justify-between px-4 py-2 text-xl font-semibold ">
       <span>{label}</span>

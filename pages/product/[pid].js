@@ -1,31 +1,11 @@
 import Image from 'next/image';
-import { useRouter } from 'next/router';
 import data from '../../data';
-import { useCart } from '#Ctx';
-import { useRef } from 'react';
+
+import AddToCartBtn from '#components/AddToCartBtn';
 import { db } from '#firebase';
 const SingleProduct = ({ product }) => {
-  const render = useRef(0);
-  render.current++;
-  console.log('page/singleProduct', render.current);
+  const { name, price, countInStock, description, rating, img } = product;
 
-  const { slug, name, price, countInStock, description, rating, img, id } =
-    product;
-  const { cartDispatch } = useCart();
-  const router = useRouter();
-  const addToCart = () => {
-    cartDispatch({
-      type: 'ADD_CART',
-      payload: {
-        slug,
-        name,
-        price,
-        img,
-        id,
-      },
-    });
-    router.push('/cart');
-  };
   return (
     <div className="grid grid-cols-1 md:grid-cols-5">
       <div className="col-span-2 mx-auto">
@@ -54,29 +34,26 @@ const SingleProduct = ({ product }) => {
         <div className="text-lg leading-7 tracking-wide text-gray-600 mt-8">
           {description}
         </div>
-        {/* <Link href={`/cart/?id=${id}`}> */}
-        <button
-          className="cursor-pointer inline-flex items-center my-4 rounded-full px-6 py-2 text-white bg-blue-500 hover:bg-blue-400 focus:bg-blue-600 focus:shadow-2xl transition duration-600 focus:outline-none    
+        <AddToCartBtn product={product}>
+          <button
+            className="cursor-pointer inline-flex items-center my-4 rounded-full px-6 py-2 text-white bg-blue-500 hover:bg-blue-400 focus:bg-blue-600 focus:shadow-2xl transition duration-600 focus:outline-none    
     "
-          onClick={addToCart}
-        >
-          Add To cart
-        </button>
-        {/* </Link> */}
+          >
+            Add To cart
+          </button>
+        </AddToCartBtn>
       </div>
     </div>
   );
 };
 export const getStaticPaths = async (ctx) => {
   let paths = [];
-  await db
-    .collection('products')
-    .get()
-    .then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        paths.push({ params: { pid: doc.data().slug } });
-      });
-    });
+  const docs = await db.collection('products').get();
+
+  docs.forEach((doc) => {
+    paths.push({ params: { pid: doc.data().slug } });
+  });
+
   // data[0].forEach((doc) => {
   //   paths.push({ params: { pid: doc.slug } });
   // });
@@ -88,17 +65,14 @@ export const getStaticPaths = async (ctx) => {
 };
 export const getStaticProps = async (ctx) => {
   let product;
-  await db
+  const docs = await db
     .collection('products')
     .where('slug', '==', ctx.params.pid)
-    .get()
-    .then((doc) => {
-      doc.docs.forEach((doc, index) => {
-        if (index === 0) product = { ...doc.data(), id: doc.id };
-      });
-    });
+    .get();
+
+  product = { ...docs.docs[0].data(), id: docs.docs[0].id };
+  // console.log('productssproductss', productss);
   // product = data[0].find((doc) => doc.slug === ctx.params.pid);
-  console.log('Product of single', product);
   return {
     props: {
       product,
